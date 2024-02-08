@@ -51,6 +51,101 @@ export default function PlayerCard({ route }) {
     sendDataToPlayerList(dataToSend);
   };
 
+  const calculateBonus = (playerData, productName, playerIndex) => {
+    const kingBonus = { Manzanas: 20, Queso: 15, Pan: 15, Pollos: 10 };
+    const queenBonus = { Manzanas: 10, Queso: 10, Pan: 10, Pollos: 10 };
+
+    const productCount = playerData.reduce((count, player) => {
+      const product = player.selectedProducts.find(
+        (product) => product.name === productName
+      );
+      return count + (product ? product.quantity : 0);
+    }, 0);
+
+    if (
+      productCount ===
+      Math.max(
+        ...playerData.map(
+          (player) =>
+            player.selectedProducts.find(
+              (product) => product.name === productName
+            )?.quantity || 0
+        )
+      )
+    ) {
+      return kingBonus[productName];
+    }
+
+    if (
+      productCount ===
+        Math.max(
+          ...playerData.map(
+            (player) =>
+              player.selectedProducts.find(
+                (product) => product.name === productName
+              )?.quantity || 0
+          ),
+          0
+        ) &&
+      playerIndex === 1
+    ) {
+      return queenBonus[productName];
+    }
+
+    return 0;
+  };
+
+  const distributeQueenBonus = (tiePlayers) => {
+    const queenBonusTotal =
+      tiePlayers.length > 1 ? queenBonusTotal / tiePlayers.length : 0;
+
+    tiePlayers.forEach((player) => {
+      player.totalPoints += queenBonusTotal;
+    });
+  };
+
+  const calculateWinner = () => {
+    if (!startgame) {
+      console.log("El juego aún no ha comenzado.");
+      return;
+    }
+
+    const playerScores = players.map((player, index) => {
+      const totalPoints =
+        playerData[index].goldAmount +
+        playerData[index].selectedProducts.reduce(
+          (acc, product) =>
+            acc +
+            product.price * product.quantity +
+            calculateBonus(playerData, product.name, index),
+          0
+        );
+
+      return {
+        index: index,
+        totalPoints: totalPoints,
+      };
+    });
+
+    const sortedPlayers = playerScores.sort(
+      (a, b) => b.totalPoints - a.totalPoints
+    );
+
+    const tiePlayers = sortedPlayers.filter(
+      (player) => player.totalPoints === sortedPlayers[0].totalPoints
+    );
+
+    distributeQueenBonus(tiePlayers);
+
+    console.log(
+      "El ganador es el Jugador " +
+        (sortedPlayers[0].index + 1) +
+        " con " +
+        sortedPlayers[0].totalPoints +
+        " puntos."
+    );
+  };
+
   const renderItem = ({ item, index }) => (
     <View style={styles.productContainer}>
       <Text>{item.name}</Text>
