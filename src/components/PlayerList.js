@@ -18,6 +18,8 @@ export default function PlayerList() {
   const [playerData, setPlayerData] = useState({});
   const [kingAndQueenBonuses, setKingAndQueenBonuses] = useState({});
   const [modalVisible, setModalVisible] = useState(false);
+  const [winnerModalVisible, setWinnerModalVisible] = useState(false);
+  const [winnerIndex, setWinnerIndex] = useState(null);
 
   const navigation = useNavigation();
 
@@ -45,6 +47,11 @@ export default function PlayerList() {
     if (players.length >= 2) {
       setStartgame(true);
     }
+  };
+
+  const showWinnerModal = (winnerIndex) => {
+    setWinnerIndex(winnerIndex);
+    setWinnerModalVisible(true);
   };
 
   const calculateWinner = () => {
@@ -113,9 +120,15 @@ export default function PlayerList() {
     });
 
     setKingAndQueenBonuses(kingAndQueenResults);
+    showWinnerModal();
+    showWinnerModal(getWinnerIndex());
   };
   const showMissingDetailsModal = () => {
     setModalVisible(true);
+  };
+
+  const closeWinnerModal = () => {
+    setWinnerModalVisible(false);
   };
 
   const goToPlayerDetails = (index) => {
@@ -127,11 +140,6 @@ export default function PlayerList() {
   };
 
   const handleReceiveDataFromPlayerCard = (data, playerIndex) => {
-    console.log(
-      `Datos recibidos en PlayerList para el Jugador ${playerIndex + 1}:`,
-      data
-    );
-
     const totalPoints =
       data.goldAmount +
       data.selectedProducts.reduce(
@@ -286,11 +294,11 @@ export default function PlayerList() {
           </TouchableOpacity>
         </View>
       )}
-      <Text style={styles.winnerText}>
+      {/* <Text style={styles.winnerText}>
         Ganador: Jugador {getWinnerIndex() + 1} (Total de puntos:{" "}
         {getWinnerTotalPoints()})
-      </Text>
-      <Text style={styles.bonusText}>
+      </Text> */}
+      {/* <Text style={styles.bonusText}>
         Bonificaciones del Rey y la Reina:
         {Object.keys(kingAndQueenBonuses).map((productType, index) => (
           <Text key={index} style={styles.bonusDetails}>
@@ -299,7 +307,24 @@ export default function PlayerList() {
             {kingAndQueenBonuses[productType].Queen + 1}){" "}
           </Text>
         ))}
-      </Text>
+      </Text> */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={winnerModalVisible}
+        onRequestClose={closeWinnerModal} // Agrega esta función para cerrar el modal al presionar fuera del contenido
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalText}>
+              ¡El ganador es{" "}
+              {winnerIndex !== null ? players[winnerIndex].name : "desconocido"}{" "}
+              con un total de puntos de {getWinnerTotalPoints()}!
+            </Text>
+            <Button title="Cerrar" onPress={closeWinnerModal} />
+          </View>
+        </View>
+      </Modal>
       <Modal
         animationType="slide"
         transparent={true}

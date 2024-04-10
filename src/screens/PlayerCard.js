@@ -5,16 +5,17 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
-  Button,
   Image,
 } from "react-native";
 import React, { useState } from "react";
+import { useNavigation } from "@react-navigation/native";
 
 export default function PlayerCard({ route }) {
   const [goldAmount, setGoldAmount] = useState("");
   const [productQuantities, setProductQuantities] = useState(
     Array(products.length).fill(0)
   );
+  const navigation = useNavigation(); // Obtenemos el objeto de navegación
 
   const { player, sendDataToPlayerList } = route.params;
 
@@ -50,6 +51,9 @@ export default function PlayerCard({ route }) {
     };
 
     sendDataToPlayerList(dataToSend);
+
+    // Una vez enviados los datos, regresamos al componente PlayerList
+    navigation.goBack();
   };
 
   const renderItem = ({ item, index }) => (
@@ -165,7 +169,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-
 const products = [
   {
     name: "Manzanas",
